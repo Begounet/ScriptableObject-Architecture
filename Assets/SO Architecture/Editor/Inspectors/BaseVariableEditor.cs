@@ -54,6 +54,10 @@ namespace ScriptableObjectArchitecture.Editor
 
                 if (scope.changed)
                 {
+                    // Apply the property value immediately so we can do something with the value 
+                    // when the event is raised.
+                    serializedObject.ApplyModifiedProperties();
+
                     // Value changed, raise events
                     Target.Raise();
                 }
