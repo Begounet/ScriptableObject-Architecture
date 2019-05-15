@@ -13,7 +13,6 @@ namespace ScriptableObjectArchitecture.Editor
          * [4] Collection
          * [5] Unity Event
          * [6] Variable
-         * [7] Clamped Variable
          *
          * /  1  2  3  4  5  6  7
          * 1     X        X
@@ -22,38 +21,33 @@ namespace ScriptableObjectArchitecture.Editor
          * 4
          * 5
          * 6
-         * 7        X        X
          */
 
-        private bool[,] _dependencyGraph = new bool[SO_CodeGenerator.TYPE_COUNT, SO_CodeGenerator.TYPE_COUNT]
+        private readonly bool[,] _dependencyGraph = new bool[SO_CodeGenerator.TYPE_COUNT, SO_CodeGenerator.TYPE_COUNT]
         {
-        { false, true, false, false, true, false, false },
-        { false, false, true, false, false, false, false },
-        { false, false, false, false, false, true, false },
-        { false, false, false, false, false, false, false },
-        { false, false, false, false, false, false, false },
-        { false, false, false, false, false, false, false },
-        { false, false, true, false, false, true, false },
+            { false, true, false, false, true, false, },
+            { false, false, true, false, false, false, },
+            { false, false, false, false, false, true, },
+            { false, false, false, false, false, false, },
+            { false, false, false, false, false, false, },
+            { false, false, false, false, false, false, },
         };
 
-        private bool[] _states = new bool[SO_CodeGenerator.TYPE_COUNT];
-        private string[] _names = new string[SO_CodeGenerator.TYPE_COUNT]
+        private readonly bool[] _states = new bool[SO_CodeGenerator.TYPE_COUNT];
+        private readonly string[] _names = new string[SO_CodeGenerator.TYPE_COUNT]
         {
-        "Event Listener",
-        "Game Event",
-        "Reference",
-        "Collection",
-        "Unity Event",
-        "Variable",
-        "Clamped Variable",
+            "Event Listener",
+            "Game Event",
+            "Reference",
+            "Collection",
+            "Unity Event",
+            "Variable",
         };
 
-        private bool[] _menuRequirement = new bool[SO_CodeGenerator.TYPE_COUNT]
+        private readonly bool[] _menuRequirement = new bool[SO_CodeGenerator.TYPE_COUNT]
         {
-        false, true, false, true, false, true, true
+            false, true, false, true, false, true
         };
-
-        private const int INDEX_CLAMPED_VARIABLE = 6;
 
         private int _order;
         private string _typeName;
@@ -64,7 +58,7 @@ namespace ScriptableObjectArchitecture.Editor
         [MenuItem("Window/SO Code Generation")]
         private static void ShowWindow()
         {
-            EditorWindow.GetWindow(typeof(SO_CodeGenerationWindow), true, "SO Code Generation");
+            GetWindow(typeof(SO_CodeGenerationWindow), true, "SO Code Generation");
         }
         private void OnEnable()
         {
@@ -83,7 +77,6 @@ namespace ScriptableObjectArchitecture.Editor
             EditorGUILayout.Space();
 
             DataFields();
-            ClampedVariableHelpBox();
 
             if (GUILayout.Button("Generate"))
             {
@@ -96,6 +89,7 @@ namespace ScriptableObjectArchitecture.Editor
                 };
 
                 SO_CodeGenerator.Generate(data);
+                AssetDatabase.Refresh();
             }
         }
         private void TypeSelection()
@@ -116,18 +110,6 @@ namespace ScriptableObjectArchitecture.Editor
                 _states[i] = EditorGUILayout.Toggle(_names[i], _states[i]);
 
                 EditorGUI.EndDisabledGroup();
-            }
-        }
-        private void ClampedVariableHelpBox()
-        {
-            _clampedValueHelpBoxAnim.target = _states[INDEX_CLAMPED_VARIABLE];
-
-            using (var anim = new EditorGUILayout.FadeGroupScope(_clampedValueHelpBoxAnim.faded))
-            {
-                if (anim.visible)
-                    EditorGUILayout.HelpBox(
-                        "Clamped variables comes with a generic clamp function, but it might need adjustments based on your type",
-                        MessageType.Warning);
             }
         }
         private void DataFields()
@@ -176,5 +158,5 @@ namespace ScriptableObjectArchitecture.Editor
 
             return false;
         }
-    } 
+    }
 }

@@ -13,12 +13,44 @@ namespace ScriptableObjectArchitecture.Editor
         {
             //We use this as a default since it'll be Assembly-CSharp-Editor
             _defaultTargetType = typeof(SOArchitecture_EditorUtility).Assembly;
-        }
 
+            CreateDebugStyle();
+        }
+        
+        /// <summary>
+        /// A debug <see cref="GUIStyle"/> that allows for identification of EditorGUI Rect issues.
+        /// </summary>
+        public static GUIStyle DebugStyle { get; private set; }
+        private const float DebugStyleBackgroundAlpha = 0.33f;
+        
         private static PropertyDrawerGraph _propertyDrawerGraph;
         private static Assembly _defaultTargetType;
         private static BindingFlags _fieldBindingsFlag = BindingFlags.Instance | BindingFlags.NonPublic;
 
+        private static void CreateDebugStyle()
+        {
+            DebugStyle = new GUIStyle();
+
+            Color debugColor = Color.magenta;
+            debugColor.a = DebugStyleBackgroundAlpha;
+
+            DebugStyle.normal.background = CreateTexture(2, 2, debugColor);
+        }
+
+        /// <summary>
+        /// Converts the entire rect of a <see cref="UnityEditorInternal.ReorderableList"/> element into a rect used for displaying a field
+        /// </summary>
+        public static Rect GetReorderableListElementFieldRect(Rect elementRect)
+        {
+            elementRect.height = EditorGUIUtility.singleLineHeight;
+            elementRect.y++;
+
+            return elementRect;
+        }
+        public static bool SupportsMultiLine(Type type)
+        {
+            return type.GetCustomAttributes(typeof(MultiLine), true).Length > 0;
+        }
         public static bool HasPropertyDrawer(Type type)
         {
             return HasPropertyDrawer(type, _defaultTargetType);
@@ -50,6 +82,18 @@ namespace ScriptableObjectArchitecture.Editor
         private static void OnProjectReloaded()
         {
             _propertyDrawerGraph = null;
+        }
+        private static Texture2D CreateTexture(int width, int height, Color col)
+        {
+            Color[] pix = new Color[width * height];
+            for (int i = 0; i < pix.Length; ++i)
+            {
+                pix[i] = col;
+            }
+            Texture2D result = new Texture2D(width, height);
+            result.SetPixels(pix);
+            result.Apply();
+            return result;
         }
 
         /// <summary>
